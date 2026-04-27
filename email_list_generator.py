@@ -4,7 +4,7 @@
 # This script is designed to run in Windows with Python 3.x.
 #
 # GYB can be found here: https://github.com/GAM-team/got-your-back
-# The "Validate Email" Python Library is optionally used: https://github.com/SyrusAkbary/validate_email
+# The "email-validator" Python Library is optionally used: https://github.com/JoshData/python-email-validator
 # This script was authored by Jeremy Blum (https://www.jeremyblum.com). Licensed under GPL v3.
 
 ######
@@ -15,7 +15,7 @@ start_year              = 2006
 end_year                = 2026
 spam_term               = 'Akismet: Spam'
 output_file             = 'emails.csv'
-validate_addresses      = False
+validate_addresses      = True
 subject_search_terms    = [
    'Subject: JeremyBlum.com Contact',
    'Subject: [JeremyBlum.com] Comment'
@@ -32,8 +32,28 @@ import csv
 import email
 from email.header import decode_header
 from email import policy
+
 if validate_addresses:
-   from validate_email import validate_email
+   from email_validator import validate_email as validate_email_address
+   from email_validator import EmailNotValidError, caching_resolver
+   # Create a caching DNS resolver for efficiency when validating many addresses
+   _dns_resolver = caching_resolver(timeout=10)
+   # Early test to ensure DNS resolution works
+   try:
+      validate_email_address('test@gmail.com', check_deliverability=True, dns_resolver=_dns_resolver)
+   except EmailNotValidError:
+      pass  # Address validity doesn't matter; we just need DNS to not crash
+
+def check_email_valid(address):
+   """Validate an email address syntax and deliverability if validation is enabled.
+   Returns True if valid (or validation disabled), False if invalid."""
+   if not validate_addresses:
+      return True
+   try:
+      validate_email_address(address, check_deliverability=True, dns_resolver=_dns_resolver)
+      return True
+   except EmailNotValidError:
+      return False
 
 ######
 # ITERATE AND FIND EMAILS!
@@ -172,8 +192,9 @@ with open(output_file, 'w', newline='', encoding='utf-8') as csv_file:
    writer = csv.writer(csv_file, dialect='excel')
    seen_emails = set()
    total_count = 0
-   print('\nChecking Email Addresses and Writing to CSV File...')
-   for entry in output:
+   total_to_check = len(output)
+   print(f'\nChecking {total_to_check} Email Addresses and Writing to CSV File...')
+   for i, entry in enumerate(output, 1):
       # Robust normalization for email and name
       raw_name, raw_email = entry[0], entry[1]
       # Extract email from <...> if present, else use as is
@@ -197,18 +218,12 @@ with open(output_file, 'w', newline='', encoding='utf-8') as csv_file:
                break
       # Final check: only add if clean_email is a valid-looking address
       if re.match(r'^[\w\.-]+@[\w\.-]+$', clean_email) and clean_email not in seen_emails:
-         if validate_addresses:
-            try:
-               is_valid = validate_email(clean_email, verify=True)
-            except Exception:
-               is_valid = True  # Assume valid if SMTP server has issues.
-         else:
-            is_valid = True
-         if is_valid:
+         print(f'\tChecking {i} of {total_to_check}: {clean_email}...', end=' ')
+         if check_email_valid(clean_email):
             writer.writerow([clean_name, clean_email])
             seen_emails.add(clean_email)
             total_count += 1
-            print('\tAdded {}!'.format(clean_email))
+            print('Added!')
          else:
-            print('\t{} is not a valid email address!'.format(clean_email))
+            print('Invalid!')
    print('\nFound and Recorded {} unique Email Addresses into {}!'.format(total_count, output_file))
