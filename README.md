@@ -1,6 +1,7 @@
-Email List Generator for Gmail Backup Archives with Wordpress Data
-==================================================================
-Here's the deal.  I use wordpress as the content management system for my website, [JeremyBlum.com](http://www.jeremyblum.com).  I get a ton of emails, some through the contact form, and others as comment notifications.  Associated with each of these emails is a name and and email address.  I also use [Got-Your-Back](https://code.google.com/p/got-your-back/) (a.k.a. GYB), a simple windows script that runs automatically on my computer every day and downloads an incremental backup of all the emails in my gmail account. I wanted a way to automatically parse through all my GYB emails and generate a comprehensive list of names/emails whom have been in contact with me. This python script accomplishes that, and can be easily modified to meet your needs if they are similar.
+
+# Email List Generator for Gmail Backup Archives with Wordpress Data
+
+This script parses your [Got-Your-Back (GYB)](https://github.com/GAM-team/got-your-back) Gmail backups to generate a CSV of names and email addresses matching your criteria.
 
 How it Works
 ------------
@@ -14,8 +15,8 @@ How it Works
 
 Notes
 -----
-* Update the "CONFIGURATION OPTIONS" in the script to match your search scenario.
-* This script was written to run in Windows with Python 2.7x 32-bit, and has not been tested in any other environments. I did not make any attempt to make it portable.
-* GYB was used to download my email archive: https://code.google.com/p/got-your-back/
+* Update the "CONFIGURATION OPTIONS" in the script to match your search scenario. You can provide an arbitrary list of subject search terms by editing the `subject_search_terms` list in the script.
+* This script assumes Python 3.x. It was originally written for Windows, but should work cross-platform with minor adjustments.
+* GYB was used to download my email archive: https://github.com/GAM-team/got-your-back
 * The "Validate Email" Python Library is Used for SMTP verification: https://github.com/SyrusAkbary/validate_email
-* This Script has been written by (Jeremy Blum)[www.jeremyblum.com] and is released under the GPL v3.  A copy of the GPL is included within this Repo.  Kindly share your improvements to this script, and maintain attribution to the original author (me).
+* This Script has been written by [Jeremy Blum](https://www.jeremyblum.com) and is released under the GPL v3.  A copy of the GPL is included within this Repo.  Kindly share your improvements to this script, and maintain attribution to the original author (me).
