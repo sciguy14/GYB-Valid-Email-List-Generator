@@ -1,0 +1,3 @@
+# Requirements for GYB-Valid-Email-List-Generator
+validate_email
+pyDNS
